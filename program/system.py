@@ -43,7 +43,7 @@ def main(lat, lng, dist):
     print "Loading... this may take a while"
     init()
     d.fill()
-    d.write()
+    d.write(ending)
 
   content = d.content
   print len(content.keys())

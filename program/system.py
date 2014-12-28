@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
 import argparse
 
-# features
-# length of review, stars, setiment, date
-
-# normalization
-# user_id
-
-# evaluation
-# votes {funny, useful, cool}
-
 # final program
-# input: review_id
+# input: [lat, lng, category, distance]
 # output:
-# Cool: %
-# Funny: %
-# Useful: %
+# category - % related to success
+
+# score
+# determine success of a buisness
+# our beleif, number of new reviews relates to success / growth
+# a0 * (rating / 5.0) + a1 * (regression for growth in reviews) + a2 * (checkins / # of checkins for buisnesses in that category)
+def score(buisness_id):
+  pass
 
 def train(buisnesses_list = []):
   pass
@@ -25,13 +21,25 @@ def main():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-            description='Determine optimal order for tips and reviews',
+            description='Determine relation between categories',
             )
 
     parser.add_argument(
-            'buisness_id',
-            type=str,
-            help='This is the buisness you want to organize tips for',
+            'latitude',
+            type=float,
+            help='',
+            )
+
+    parser.add_argument(
+            'longitude',
+            type=float,
+            help='',
+            )
+
+    parser.add_argument(
+            'distance',
+            type=float,
+            help='',
             )
 
     args = parser.parse_args()

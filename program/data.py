@@ -1,5 +1,20 @@
-import simplejson as json
+import json
 from datetime import datetime, date
+from sets import Set
+
+import pickle
+
+class PythonObjectEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, (list, dict, str, unicode, int, float, bool, type(None))):
+      return json.JSONEncoder.default(self, obj)
+    return {'_python_object': pickle.dumps(obj)}
+
+def as_python_object(dct):
+  if '_python_object' in dct:
+    return pickle.loads(str(dct['_python_object']))
+  return dct
+
 
 bucket_size = 100 # number of days for a review bucket
 num_buckets = 10  # total number of days to compare
@@ -64,7 +79,7 @@ class Structure(object):
     file_path = get_file_name(self.__name)
     with open(file_path) as fin:
       for line in fin:
-        r = json.loads(line)
+        r = json.loads(line, object_hook=as_python_object)
         bid = r['business_id']
         if bid not in self.content:
           self.content[bid] = []
@@ -73,7 +88,7 @@ class Structure(object):
   def write(self, ending = '_data'):
     file_path = get_file_name(self.__name + ending)
     fout = open(file_path, 'w')
-    data = json.dumps(self.content, separators=(',', ':'), sort_keys=False)
+    data = json.dumps(self.content, cls=PythonObjectEncoder, separators=(',', ':'), sort_keys=False)
     fout.write(data)
     fout.close()
 
@@ -81,7 +96,7 @@ class Structure(object):
     file_path = get_file_name(self.__name + ending)
     fin = open(file_path, 'r')
     data = fin.read()
-    self.content = json.loads(data)
+    self.content = json.loads(data, object_hook=as_python_object)
     fin.close()
 
   def add_content(self, key, value):
@@ -124,7 +139,7 @@ class Data(Structure):
     file_path = get_file_name('business')
     with open(file_path) as fin:
       for line in fin:
-        b = json.loads(line)
+        b = json.loads(line, object_hook=as_python_object)
         if (distance(self.__lat, self.__lng, b['latitude'], b['longitude']) < self.__distance):
           self.add_to_data(b)
 
@@ -133,7 +148,7 @@ class Data(Structure):
       'lat' : b['latitude'] - self.__lat,
       'lng' : b['longitude'] - self.__lng,
       'stars': b['stars'],
-      'categories': b['categories'],
+      'categories': Set(b['categories']),
       'attributes': b['attributes'],
       'reviews': False,
       'checkins': c.fetch(b['business_id']),
